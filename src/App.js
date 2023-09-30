@@ -7,6 +7,19 @@ import { extendTheme } from "@chakra-ui/react";
 import Footer from './Footer'
 import Navbar from './Navbar'
 
+const tooltipStyles = {
+  position: 'absolute',
+  top: '10px',
+  left: '10px',
+  background: 'rgba(0, 0, 0, 0.8)',
+  padding: '10px',
+  borderRadius: '5px',
+  color: 'white',
+  cursor: 'pointer',
+  zIndex: '1000',
+  maxWidth: '300px'
+};
+
 const theme = extendTheme({});
 
 const defaultColors = {
@@ -46,6 +59,8 @@ function App() {
   const [stripes, setStripes] = useState(getRandomColor());
   const [soul, setSoul] = useState(getRandomColor());
   const [modelKey, setModelKey] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(true);
+
 
   const [language, setLanguage] = useState("en");
   const translations = {
@@ -89,6 +104,10 @@ function App() {
     setModelKey((prevKey) => prevKey + 1);
   };
 
+  const hideTooltip = () => {
+    setShowTooltip(false);
+  };
+
 
   return (
     <ChakraProvider theme={theme}>
@@ -98,7 +117,23 @@ function App() {
         <meta name="author" content="FL Automations" />
       </Helmet>
       <Navbar />
-      <Box className="wrapper" minH="100vh" bg="#6D74C5" color="#edf2f4" fontFamily="Arial" textAlign="center" py={5}>
+      <Box
+      className="wrapper"
+      minH="100vh"
+      bg="#6D74C5"
+      color="#edf2f4"
+      fontFamily="Arial"
+      textAlign="center"
+      py={5}
+      position="relative"
+    >
+      {showTooltip && (
+        <div style={tooltipStyles} onClick={hideTooltip}>
+          {language === 'en'
+            ? 'You can rotate, zoom, and move the canvas'
+            : 'Puede rotar, hacer zoom y mover el lienzo'}
+        </div>
+      )}
         <Center>
           <VStack spacing={4}>
           <Box
@@ -179,7 +214,7 @@ function App() {
               </Flex>
               <Flex justifyContent="center" alignItems="center">
                 <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={resetCanvas}>
-                  {language === "en" ? "Reset Canvas" : "Reiniciar Canvas"}
+                  {language === "en" ? "Reset Canvas" : "Reiniciar lienzo"}
                 </Button>
                 <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={getRandomColors}>
                   {translatedText.getRandom}

@@ -1,30 +1,15 @@
-'use strict';
 import React from 'react';
 import {
   Box,
   Flex,
-  Avatar,
   HStack,
   Button,
   Menu,
   MenuButton,
-  MenuList,
-  MenuItem,
-  MenuDivider,
-  useDisclosure,
   useColorModeValue,
-  Stack,
 } from '@chakra-ui/react';
-import * as contentEn from './content-en';
-import * as contentEs from './content-es';
 
-
-
-export default function Navbar({ lang }) {
-  const content = lang === 'en' ? contentEn : contentEs;
-
-  
-
+export default function Navbar() {
   return (
     <React.Fragment>
       <Box bg={useColorModeValue('gray.100', 'gray.900')} px={4} w="100%">
@@ -63,7 +48,6 @@ export default function Navbar({ lang }) {
                 </MenuButton>
               </Menu>
               </>
-            
               <Menu>
                 <MenuButton
                   as={Button}
@@ -74,8 +58,7 @@ export default function Navbar({ lang }) {
                 >
                 </MenuButton>
               </Menu>
-            </Flex>
-          
+            </Flex>         
           </Flex>
         </Box>
     </React.Fragment>
