@@ -49,8 +49,10 @@
     "@react-three/drei": "^9.86.2",
     "@react-three/fiber": "^8.14.3",
     "framer-motion": "^10.16.4",
+    "react-draggable": "^4.4.6",
     "react-helmet": "^6.1.0",
     "react-icons": "^4.11.0",
+    "react-svg": "^16.1.27",
     "web-vitals": "^3.5.0"
   }
 }

@@ -2,31 +2,20 @@ import React, { Suspense, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
 import { Helmet } from 'react-helmet';
-import { ChakraProvider, Button, Box, Center, Text, Flex, Spacer, VStack, Input } from "@chakra-ui/react";
+import { ChakraProvider, Button, Box, Center, Text, Flex, Spacer, VStack, Input, CloseButton } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
-import Footer from './Footer'
-import Navbar from './Navbar'
+import Footer from './Footer';
+import Navbar from './Navbar';
+import { ReactSVG } from 'react-svg';
+import Draggable from 'react-draggable';
 
-const tooltipStyles = {
-  position: 'absolute',
-  top: '10px',
-  left: '10px',
-  background: 'rgba(0, 0, 0, 0.8)',
-  padding: '10px',
-  borderRadius: '5px',
-  color: 'white',
-  cursor: 'pointer',
-  zIndex: '1000',
-  maxWidth: '300px'
+const DEFAULT_COLORS = {
+  mesh: "#ffffff",
+  stripes: "#ffffff",
+  soul: "#ffffff",
 };
 
 const theme = extendTheme({});
-
-const defaultColors = {
-  mesh: "#ffffff",
-  stripes: "#ffffff",
-  soul: "#ffffff"
-};
 
 function getRandomColor() {
   const letters = '0123456789ABCDEF';
@@ -55,12 +44,20 @@ function Model({ ...props }) {
 }
 
 function App() {
-  const [mesh, setMesh] = useState(getRandomColor());
-  const [stripes, setStripes] = useState(getRandomColor());
-  const [soul, setSoul] = useState(getRandomColor());
-  const [modelKey, setModelKey] = useState(0);
-  const [showTooltip, setShowTooltip] = useState(true);
 
+  const closeTooltip = () => {
+    console.log("Working")
+    setTooltipX(-300); // Move the tooltip off-screen to hide it
+    setTooltipY(-300); // Move the tooltip off-screen to hide it
+  };
+
+  const [colors, setColors] = useState({
+    mesh: getRandomColor(),
+    stripes: getRandomColor(),
+    soul: getRandomColor(),
+  });
+
+  const [modelKey, setModelKey] = useState(0);
 
   const [language, setLanguage] = useState("en");
   const translations = {
@@ -70,7 +67,7 @@ function App() {
       stripes: "Stripes",
       soul: "Soul",
       resetColors: "Reset colors",
-      getRandom: "Get Random"
+      getRandom: "Get Random",
     },
     es: {
       colorChooser: "Selector de color",
@@ -78,14 +75,16 @@ function App() {
       stripes: "Rayas",
       soul: "Suela",
       resetColors: "Restablecer colores",
-      getRandom: "Obtener aleatorio"
+      getRandom: "Obtener aleatorio",
     },
   };
 
   function getRandomColors() {
-    setMesh(getRandomColor());
-    setStripes(getRandomColor());
-    setSoul(getRandomColor());
+    setColors({
+      mesh: getRandomColor(),
+      stripes: getRandomColor(),
+      soul: getRandomColor(),
+    });
   }
 
   const toggleLanguage = () => {
@@ -95,19 +94,38 @@ function App() {
   const translatedText = translations[language];
 
   const resetColors = () => {
-    setMesh(defaultColors.mesh);
-    setStripes(defaultColors.stripes);
-    setSoul(defaultColors.soul);
+    setColors(DEFAULT_COLORS);
   };
 
   const resetCanvas = () => {
     setModelKey((prevKey) => prevKey + 1);
   };
 
-  const hideTooltip = () => {
-    setShowTooltip(false);
+  let isDragging = false;
+  let initialX;
+  let initialY;
+
+  const handleDragStart = (e) => {
+    e.stopPropagation();
+    isDragging = true;
+    initialX = e.clientX - tooltipX;
+    initialY = e.clientY - tooltipY;
   };
 
+  const handleDragMove = (e) => {
+    if (!isDragging) return;
+    const newX = e.clientX - initialX;
+    const newY = e.clientY - initialY;
+    setTooltipX(newX);
+    setTooltipY(newY);
+  };
+
+  const handleDragEnd = () => {
+    isDragging = false;
+  };
+
+  const [tooltipX, setTooltipX] = useState(10);
+  const [tooltipY, setTooltipY] = useState(10);
 
   return (
     <ChakraProvider theme={theme}>
@@ -118,25 +136,60 @@ function App() {
       </Helmet>
       <Navbar />
       <Box
-      className="wrapper"
-      minH="100vh"
-      bg="#6D74C5"
-      color="#edf2f4"
-      fontFamily="Arial"
-      textAlign="center"
-      py={5}
-      position="relative"
-    >
-      {showTooltip && (
-        <div style={tooltipStyles} onClick={hideTooltip}>
-          {language === 'en'
-            ? 'You can rotate, zoom, and move the canvas'
-            : 'Puede rotar, hacer zoom y mover el lienzo'}
-        </div>
-      )}
+        className="wrapper"
+        minH="100vh"
+        bg="#6D74C5"
+        color="#edf2f4"
+        fontFamily="Arial"
+        textAlign="center"
+        py={5}
+        position="relative"
+      >
+        <Draggable
+          handle=".handle"
+          bounds="parent"
+          defaultPosition={{ x: tooltipX, y: tooltipY }} // Use the tooltipX and tooltipY states
+        >
+          <div
+            className="handle"
+            style={{
+              position: 'absolute',
+              bottom: '10px',
+              right: '10px',
+              padding: '40px',
+              borderRadius: '5px',
+              color: 'white',
+              cursor: 'pointer',
+              zIndex: '1001',
+              maxWidth: '300px',
+              transition: 'background 0.3s',
+              background: 'rgba(0, 0, 0, 0.5)',
+            }}
+            onMouseDown={handleDragStart}
+            onMouseMove={handleDragMove}
+            onMouseUp={handleDragEnd}
+            onMouseLeave={handleDragEnd}
+          >
+            <CloseButton onClick={(e) => { e.stopPropagation(); closeTooltip(); }} position="absolute" display="none" top="5px" right="5px" />
+            {language === 'en'
+              ? (
+                <span>
+                  Move: right click <br />
+                  Rotate: hold left click <br />
+                  Zoom: mouse scroll
+                </span>
+              )
+              : <span>
+                  Mover: click derecho <br />
+                  Rotar: mantener click izquierdo <br />
+                  Zoom: rueda del ratón
+              </span>
+            }
+          </div>
+        </Draggable>
         <Center>
           <VStack spacing={4}>
-          <Box
+            <Box
               className="card"
               borderRadius="15px"
               boxShadow="0 10px 20px rgba(0, 0, 0, 0.2)"
@@ -160,7 +213,7 @@ function App() {
                   <Suspense fallback={null}>
                     <ambientLight />
                     <spotLight intensity={0.9} angle={0.1} penumbra={1} position={[10, 15, 10]} castShadow />
-                    <Model customColors={{ mesh: mesh, stripes: stripes, soul: soul }} />
+                    <Model customColors={{ ...colors }} />
                     <OrbitControls enablePan={true} enableZoom={true} enableRotate={true} />
                   </Suspense>
                 </Canvas>
@@ -173,8 +226,8 @@ function App() {
                     type="color"
                     id="mesh"
                     name="mesh"
-                    value={mesh}
-                    onChange={(e) => setMesh(e.target.value)}
+                    value={colors.mesh}
+                    onChange={(e) => setColors({ ...colors, mesh: e.target.value })}
                     style={{ appearance: 'none', width: '60px', height: '24px', borderRadius: '10%' }}
                   />
                   <Text htmlFor="mesh">{translatedText.main}</Text>
@@ -185,8 +238,8 @@ function App() {
                     type="color"
                     id="stripes"
                     name="stripes"
-                    value={stripes}
-                    onChange={(e) => setStripes(e.target.value)}
+                    value={colors.stripes}
+                    onChange={(e) => setColors({ ...colors, stripes: e.target.value })}
                     style={{ appearance: 'none', width: '60px', height: '24px', borderRadius: '10%' }}
                   />
                   <Text htmlFor="stripes">{translatedText.stripes}</Text>
@@ -197,8 +250,8 @@ function App() {
                     type="color"
                     id="soul"
                     name="soul"
-                    value={soul}
-                    onChange={(e) => setSoul(e.target.value)}
+                    value={colors.soul}
+                    onChange={(e) => setColors({ ...colors, soul: e.target.value })}
                     style={{ appearance: 'none', width: '60px', height: '24px', borderRadius: '10%' }}
                   />
                   <Text htmlFor="soul">{translatedText.soul}</Text>
@@ -206,18 +259,42 @@ function App() {
               </Flex>
               <Flex justifyContent="center" alignItems="center">
                 <Button w={"130px"} fontSize={9} m={2} p={5} bgColor="#6D74C5" color="white" onClick={resetColors}>
-                  {translatedText.resetColors}
+                  <ReactSVG
+                    src="color.svg"
+                    beforeInjection={(svg) => {
+                      svg.setAttribute('width', '20px');
+                      svg.setAttribute('height', '20px');
+                    }}
+                  />
                 </Button>
                 <Button  w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={toggleLanguage}>
-                  {language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
+                  <ReactSVG
+                    src="lang.svg"
+                    beforeInjection={(svg) => {
+                      svg.setAttribute('width', '20px');
+                      svg.setAttribute('height', '20px');
+                    }}
+                  />
                 </Button>
               </Flex>
               <Flex justifyContent="center" alignItems="center">
                 <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={resetCanvas}>
-                  {language === "en" ? "Reset Canvas" : "Reiniciar lienzo"}
+                  <ReactSVG
+                    src="reset.svg"
+                    beforeInjection={(svg) => {
+                      svg.setAttribute('width', '20px');
+                      svg.setAttribute('height', '20px');
+                    }}
+                  />
                 </Button>
                 <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={getRandomColors}>
-                  {translatedText.getRandom}
+                  <ReactSVG
+                    src="shuffle.svg"
+                    beforeInjection={(svg) => {
+                      svg.setAttribute('width', '20px');
+                      svg.setAttribute('height', '20px');
+                    }}
+                  />
                 </Button>
               </Flex>
             </Box>
