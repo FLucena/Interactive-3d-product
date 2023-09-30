@@ -124,8 +124,8 @@ function App() {
     isDragging = false;
   };
 
-  const [tooltipX, setTooltipX] = useState(10);
-  const [tooltipY, setTooltipY] = useState(10);
+  const [tooltipX, setTooltipX] = useState(-100);
+  const [tooltipY, setTooltipY] = useState(-400);
 
   return (
     <ChakraProvider theme={theme}>
