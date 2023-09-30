@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet';
 import { ChakraProvider, Button, Box, Center, Text, Flex, Spacer, VStack, Input } from "@chakra-ui/react";
 import { extendTheme } from "@chakra-ui/react";
 import Footer from './Footer'
+import Navbar from './Navbar'
 
 const theme = extendTheme({});
 
@@ -79,7 +80,8 @@ function App() {
         <meta name="description" content="A sneakers showcase." />
         <meta name="author" content="FL Automations" />
       </Helmet>
-      <Box className="wrapper" minH="100vh" bg="#6D74C5" color="#edf2f4" fontFamily="Arial" textAlign="center">
+      <Navbar />
+      <Box className="wrapper" minH="100vh" bg="#6D74C5" color="#edf2f4" fontFamily="Arial" textAlign="center" py={5}>
         <Center>
           <VStack spacing={4}>
             <Box className="card" borderRadius="15px" boxShadow="0 10px 20px rgba(0, 0, 0, 0.2)" p="2rem" bg="#c5c8e8" maxW="80%">
