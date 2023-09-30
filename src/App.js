@@ -15,6 +15,15 @@ const defaultColors = {
   soul: "#ffffff"
 };
 
+function getRandomColor() {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
+
 function Model({ ...props }) {
   const group = useRef()
   const { nodes, materials } = useGLTF('/shoe.gltf')
@@ -33,9 +42,9 @@ function Model({ ...props }) {
 }
 
 function App() {
-  const [mesh, setMesh] = useState("#ffffff");
-  const [stripes, setStripes] = useState("#ffffff");
-  const [soul, setSoul] = useState("#ffffff");
+  const [mesh, setMesh] = useState(getRandomColor());
+  const [stripes, setStripes] = useState(getRandomColor());
+  const [soul, setSoul] = useState(getRandomColor());
   const [modelKey, setModelKey] = useState(0);
 
   const [language, setLanguage] = useState("en");
@@ -45,16 +54,24 @@ function App() {
       main: "Main",
       stripes: "Stripes",
       soul: "Soul",
-      resetToDefault: "Reset to Default",
+      resetColors: "Reset colors",
+      getRandom: "Get Random"
     },
     es: {
       colorChooser: "Selector de color",
       main: "Principal",
       stripes: "Rayas",
       soul: "Suela",
-      resetToDefault: "Restablecer a predeterminado",
+      resetColors: "Restablecer colores",
+      getRandom: "Obtener aleatorio"
     },
   };
+
+  function getRandomColors() {
+    setMesh(getRandomColor());
+    setStripes(getRandomColor());
+    setSoul(getRandomColor());
+  }
 
   const toggleLanguage = () => {
     setLanguage(language === "en" ? "es" : "en");
@@ -84,8 +101,26 @@ function App() {
       <Box className="wrapper" minH="100vh" bg="#6D74C5" color="#edf2f4" fontFamily="Arial" textAlign="center" py={5}>
         <Center>
           <VStack spacing={4}>
-            <Box className="card" borderRadius="15px" boxShadow="0 10px 20px rgba(0, 0, 0, 0.2)" p="2rem" bg="#c5c8e8" maxW="80%">
-              <Box className="product-canvas" bg="#ffffff" boxShadow="0 8px 12px rgba(0, 0, 0, 0.2)" borderRadius="10px" mb="20px" display="flex" flexDirection="column" alignItems="center" maxW="30vw" minW="100%">
+          <Box
+              className="card"
+              borderRadius="15px"
+              boxShadow="0 10px 20px rgba(0, 0, 0, 0.2)"
+              p="2rem"
+              bg="#c5c8e8"
+              maxW="80%"
+            >
+              <Box
+                className="product-canvas"
+                bg="#ffffff"
+                boxShadow="0 8px 12px rgba(0, 0, 0, 0.2)"
+                borderRadius="10px"
+                mb="20px"
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                maxW="50vw"
+                minW="100%"
+              >
                 <Canvas key={modelKey}>
                   <Suspense fallback={null}>
                     <ambientLight />
@@ -134,15 +169,22 @@ function App() {
                   <Text htmlFor="soul">{translatedText.soul}</Text>
                 </Box>
               </Flex>
-              <Button m={2} py={2} bgColor="#6D74C5" color="white" onClick={resetColors}>
-                {translatedText.resetToDefault}
-              </Button>
-              <Button m={2} py={2} bgColor="#6D74C5" color="white" onClick={toggleLanguage}>
-                {language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
-              </Button>
-              <Button m={2} py={2} bgColor="#6D74C5" color="white" onClick={resetCanvas}>
-                {language === "en" ? "Reset Canvas" : "Reiniciar Canvas"}
-              </Button>
+              <Flex justifyContent="center" alignItems="center">
+                <Button w={"130px"} fontSize={9} m={2} p={5} bgColor="#6D74C5" color="white" onClick={resetColors}>
+                  {translatedText.resetColors}
+                </Button>
+                <Button  w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={toggleLanguage}>
+                  {language === "en" ? "Switch to Spanish" : "Cambiar a inglés"}
+                </Button>
+              </Flex>
+              <Flex justifyContent="center" alignItems="center">
+                <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={resetCanvas}>
+                  {language === "en" ? "Reset Canvas" : "Reiniciar Canvas"}
+                </Button>
+                <Button w={"130px"} fontSize={10} m={2} p={5} bgColor="#6D74C5" color="white" onClick={getRandomColors}>
+                  {translatedText.getRandom}
+                </Button>
+              </Flex>
             </Box>
           </VStack>
         </Center>
