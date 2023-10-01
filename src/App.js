@@ -101,29 +101,6 @@ function App() {
     setModelKey((prevKey) => prevKey + 1);
   };
 
-  let isDragging = false;
-  let initialX;
-  let initialY;
-
-  const handleDragStart = (e) => {
-    e.stopPropagation();
-    isDragging = true;
-    initialX = e.clientX - tooltipX;
-    initialY = e.clientY - tooltipY;
-  };
-
-  const handleDragMove = (e) => {
-    if (!isDragging) return;
-    const newX = e.clientX - initialX;
-    const newY = e.clientY - initialY;
-    setTooltipX(newX);
-    setTooltipY(newY);
-  };
-
-  const handleDragEnd = () => {
-    isDragging = false;
-  };
-
   const [tooltipX, setTooltipX] = useState(-100);
   const [tooltipY, setTooltipY] = useState(-400);
 
@@ -148,29 +125,28 @@ function App() {
         <Draggable
           handle=".handle"
           bounds="parent"
-          defaultPosition={{ x: tooltipX, y: tooltipY }} // Use the tooltipX and tooltipY states
+          defaultPosition={{ x: tooltipX, y: tooltipY }}
         >
-          <div
-            className="handle"
-            style={{
-              position: 'absolute',
-              bottom: '10px',
-              right: '10px',
-              padding: '40px',
-              borderRadius: '5px',
-              color: 'white',
-              cursor: 'pointer',
-              zIndex: '1001',
-              maxWidth: '300px',
-              transition: 'background 0.3s',
-              background: 'rgba(0, 0, 0, 0.5)',
-            }}
-            onMouseDown={handleDragStart}
-            onMouseMove={handleDragMove}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
+        <Box
+          className="handle"
+          position="absolute"
+          bottom="10px"
+          right="10px"
+          padding="40px"
+          borderRadius="5px"
+          color="white"
+          cursor="pointer"
+          zIndex="1001"
+          width="280px"
+          height="150px"
+          transition="background 0.3s"
+          background="rgba(0, 0, 0, 0.5)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          flexDirection="column"
           >
-            <CloseButton onClick={(e) => { e.stopPropagation(); closeTooltip(); }} position="absolute" display="none" top="5px" right="5px" />
+            <CloseButton onClick={(e) => { e.stopPropagation(); closeTooltip(); }} position="absolute" display="none" top="5px" right="5px" width="245px" />
             {language === 'en'
               ? (
                 <span>
@@ -185,7 +161,7 @@ function App() {
                   Zoom: rueda del ratón
               </span>
             }
-          </div>
+          </Box>
         </Draggable>
         <Center>
           <VStack spacing={4}>
