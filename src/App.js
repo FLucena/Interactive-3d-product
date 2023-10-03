@@ -1,3 +1,4 @@
+import html2canvas from 'html2canvas';
 import React, { Suspense, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, useGLTF } from '@react-three/drei';
@@ -45,10 +46,27 @@ function Model({ ...props }) {
 
 function App() {
 
+  const [isTooltipVisible, setIsTooltipVisible] = useState(true);
+
   const closeTooltip = () => {
-    console.log("Working")
-    setTooltipX(-300); // Move the tooltip off-screen to hide it
-    setTooltipY(-300); // Move the tooltip off-screen to hide it
+    setIsTooltipVisible(false);
+  };
+
+  const canvasRef = useRef();
+  const [screenshotURL, setScreenshotURL] = useState(null);
+
+  const captureScreenshot = () => {
+    if (!is3DLoaded) {
+      return;
+    }
+
+    setTimeout(() => {
+      const canvas = canvasRef.current;
+      html2canvas(canvas).then((canvas) => {
+        const screenshot = canvas.toDataURL('image/png');
+        setScreenshotURL(screenshot);
+      });
+    }, 1000);
   };
 
   const [colors, setColors] = useState({
@@ -101,8 +119,7 @@ function App() {
     setModelKey((prevKey) => prevKey + 1);
   };
 
-  const [tooltipX, setTooltipX] = useState(-100);
-  const [tooltipY, setTooltipY] = useState(-400);
+  const [is3DLoaded, setIs3DLoaded] = useState(false);
 
   return (
     <ChakraProvider theme={theme}>
@@ -122,47 +139,53 @@ function App() {
         py={5}
         position="relative"
       >
-        <Draggable
-          handle=".handle"
-          bounds="parent"
-          defaultPosition={{ x: tooltipX, y: tooltipY }}
-        >
-        <Box
-          className="handle"
-          position="absolute"
-          bottom="10px"
-          right="10px"
-          padding="40px"
-          borderRadius="5px"
-          color="white"
-          cursor="pointer"
-          zIndex="1001"
-          width="280px"
-          height="150px"
-          transition="background 0.3s"
-          background="rgba(0, 0, 0, 0.5)"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-          flexDirection="column"
+        {isTooltipVisible && (
+          <Draggable
+            handle=".handle"
+            bounds="parent"
+            onMouseDown={(e) => {
+              if (e.detail === 2) {
+                closeTooltip();
+              }
+            }}
           >
-            <CloseButton onClick={(e) => { e.stopPropagation(); closeTooltip(); }} position="absolute" display="none" top="5px" right="5px" width="245px" />
-            {language === 'en'
+            <Box
+              className="handle"
+              position="absolute"
+              bottom="10px"
+              right="10px"
+              padding="40px"
+              borderRadius="5px"
+              color="white"
+              cursor="pointer"
+              zIndex="1001"
+              width="440px"
+              height="150px"
+              transition="background 0.3s"
+              background="rgba(0, 0, 0, 0.5)"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              flexDirection="column"
+            >
+              <CloseButton onClick={closeTooltip} position="absolute" top="5px" right="5px" />
+              {language === 'en'
               ? (
                 <span>
-                  Move: right click <br />
-                  Rotate: hold left click <br />
-                  Zoom: mouse scroll
+                  Move: right click / two finger swipe <br />
+                  Rotate: hold left click / one finger swipe <br />
+                  Zoom: mouse scroll / two finger spread
                 </span>
               )
               : <span>
-                  Mover: click derecho <br />
-                  Rotar: mantener click izquierdo <br />
-                  Zoom: rueda del ratón
+                  Mover: click derecho / deslizar dos dedos <br />
+                  Rotar: mantener click izquierdo / deslizar un dedo <br />
+                  Zoom: rueda del ratón / separar dos dedos
               </span>
             }
-          </Box>
-        </Draggable>
+            </Box>
+          </Draggable>
+        )}
         <Center>
           <VStack spacing={4}>
             <Box
@@ -185,7 +208,15 @@ function App() {
                 maxW="50vw"
                 minW="100%"
               >
-                <Canvas key={modelKey}>
+                <Canvas
+                  key={modelKey}
+                  ref={canvasRef}
+                  onCreated={({ gl }) => {
+                    gl.setPixelRatio(window.devicePixelRatio);
+                    setIs3DLoaded(true);
+                  }}
+                  gl={{ preserveDrawingBuffer: true }} 
+                >
                   <Suspense fallback={null}>
                     <ambientLight />
                     <spotLight intensity={0.9} angle={0.1} penumbra={1} position={[10, 15, 10]} castShadow />
@@ -194,7 +225,34 @@ function App() {
                   </Suspense>
                 </Canvas>
               </Box>
-              <Text fontSize="xl">{translatedText.colorChooser}</Text>
+              <Button
+                w={"130px"}
+                fontSize={10}
+                mt={4}
+                mb={5}
+                p={5}
+                bgColor="#6D74C5"
+                color="white"
+                onClick={captureScreenshot}
+              >
+                {language === 'en'
+              ? (
+                <span>
+                  Capture Screenshot
+                </span>
+              )
+              : <span>
+                  Captura de pantalla
+              </span>
+            }
+              </Button>
+              {screenshotURL && (
+                <div style={{ maxWidth: '30vw' }}>
+                  <img src={screenshotURL} alt="Screenshot" />
+                </div>
+              )}
+
+              <Text mt={5} fontSize="xl">{translatedText.colorChooser}</Text>
               <Flex className='colors' justifyContent="center" my={5} >
                 <Box>
                   <Input
